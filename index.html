@@ -30,10 +30,10 @@
             <div class="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto mb-8">
                 <h2 class="text-2xl text-gray-600 mb-4">Собрано средств:</h2>
                 <div id="current-sum" class="text-6xl font-bold text-green-600 mb-4">
-                    Загрузка...
+                    0 ₸
                 </div>
                 <div id="target-sum" class="text-xl text-gray-500">
-                    из <span>Загрузка...</span>
+                    из 5 000 000 ₸
                 </div>
                 <div class="w-full bg-gray-200 rounded-full h-4 mt-4">
                     <div id="progress-bar" class="bg-green-600 h-4 rounded-full" style="width: 0%"></div>
@@ -42,6 +42,7 @@
         </div>
     </main>
 
+    <!-- Временно отключено для GitHub Pages
     <script>
         function updateSum() {
             fetch('http://localhost:5000/api/sum')
@@ -64,5 +65,6 @@
         updateSum();
         setInterval(updateSum, 5000);
     </script>
+    -->
 </body>
 </html> 
