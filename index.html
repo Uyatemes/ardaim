@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Благотворительный фонд</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <header class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4">
+            <div class="flex items-center justify-center">
+                <img src="https://via.placeholder.com/150x50" alt="Логотип" class="h-12">
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-4 py-12">
+        <div class="text-center">
+            <h1 class="text-3xl font-bold text-gray-900 mb-6">
+                Біз болашақ мұғалімдердің жаңа буынын құру арқылы саналы қоғамның қалыптасуына үлес қосамыз
+            </h1>
+            
+            <div class="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto mb-8">
+                <h2 class="text-2xl text-gray-600 mb-4">Собрано средств:</h2>
+                <div id="current-sum" class="text-6xl font-bold text-green-600 mb-4">
+                    Загрузка...
+                </div>
+                <div id="target-sum" class="text-xl text-gray-500">
+                    из <span>Загрузка...</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-4 mt-4">
+                    <div id="progress-bar" class="bg-green-600 h-4 rounded-full" style="width: 0%"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        function updateSum() {
+            fetch('http://localhost:5000/api/sum')
+                .then(response => response.json())
+                .then(data => {
+                    const currentSum = data.current_sum;
+                    const targetSum = data.target_sum;
+                    const progress = (currentSum / targetSum) * 100;
+
+                    document.getElementById('current-sum').textContent = 
+                        new Intl.NumberFormat('ru-RU').format(currentSum) + ' ₸';
+                    document.getElementById('target-sum').innerHTML = 
+                        'из ' + new Intl.NumberFormat('ru-RU').format(targetSum) + ' ₸';
+                    document.getElementById('progress-bar').style.width = progress + '%';
+                })
+                .catch(error => console.error('Ошибка при получении данных:', error));
+        }
+
+        // Обновляем сумму каждые 5 секунд
+        updateSum();
+        setInterval(updateSum, 5000);
+    </script>
+</body>
+</html> 
