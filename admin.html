@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Админка — Изменить сумму</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Roboto', sans-serif; }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-8 mb-8">
+            <h1 class="text-2xl font-bold mb-6 text-center">Управление пожертвованиями</h1>
+            
+            <!-- Форма для добавления доната -->
+            <form id="donation-form" class="space-y-4 mb-6">
+                <div>
+                    <label for="donation-amount" class="block text-gray-700 mb-2">Добавить пожертвование (₸):</label>
+                    <input type="number" id="donation-amount" name="donation-amount" class="w-full border rounded px-3 py-2" required>
+                </div>
+                <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">Добавить пожертвование</button>
+            </form>
+
+            <!-- Форма для целевой суммы -->
+            <form id="target-sum-form" class="space-y-4">
+                <div>
+                    <label for="target-sum" class="block text-gray-700 mb-2">Целевая сумма (₸):</label>
+                    <input type="number" id="target-sum" name="target-sum" class="w-full border rounded px-3 py-2" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition">Сохранить целевую сумму</button>
+            </form>
+
+            <div id="status" class="mt-4 text-center text-sm"></div>
+        </div>
+
+        <!-- Список пожертвований -->
+        <div class="bg-white rounded-lg shadow-lg p-8">
+            <h2 class="text-xl font-bold mb-4">История пожертвований</h2>
+            <div id="donationsList" class="space-y-2">
+                <!-- Здесь будет список пожертвований -->
+            </div>
+        </div>
+
+        <div class="mt-6 text-center">
+            <a href="index.html" class="text-blue-600 hover:underline">На главную</a>
+        </div>
+    </div>
+
+    <script>
+        // Функция для получения списка пожертвований
+        function getDonations() {
+            const donations = localStorage.getItem('donations');
+            console.log('Полученные пожертвования:', donations);
+            return donations ? JSON.parse(donations) : [];
+        }
+
+        // Функция для сохранения списка пожертвований
+        function saveDonations(donations) {
+            localStorage.setItem('donations', JSON.stringify(donations));
+            // Также сохраняем общую сумму
+            const totalAmount = donations.reduce((sum, donation) => sum + donation.amount, 0);
+            localStorage.setItem('current_sum', totalAmount);
+        }
+
+        function getSums() {
+            return {
+                current: parseInt(localStorage.getItem('current_sum') || '0', 10),
+                target: parseInt(localStorage.getItem('target_sum') || '5000000', 10)
+            };
+        }
+
+        function setSums(current, target) {
+            if (current !== undefined) {
+                localStorage.setItem('current_sum', current);
+            }
+            if (target !== undefined) {
+                localStorage.setItem('target_sum', target);
+            }
+        }
+
+        // Функция для удаления пожертвования
+        function deleteDonation(id) {
+            const donations = getDonations();
+            const updatedDonations = donations.filter(donation => donation.id !== id);
+            saveDonations(updatedDonations);
+            updateDonationsList();
+            window.dispatchEvent(new Event('storage'));
+        }
+
+        // Функция для обновления списка пожертвований
+        function updateDonationsList() {
+            const donations = getDonations();
+            const donationsList = document.getElementById('donationsList');
+            
+            if (donations.length === 0) {
+                donationsList.innerHTML = '<p class="text-gray-500 text-center">Нет пожертвований</p>';
+                return;
+            }
+
+            donationsList.innerHTML = donations.map(donation => `
+                <div class="flex justify-between items-center p-3 bg-gray-50 rounded">
+                    <div>
+                        <span class="font-medium">${new Intl.NumberFormat('ru-RU').format(donation.amount)} ₸</span>
+                        <span class="text-gray-500 text-sm ml-2">${donation.date}</span>
+                    </div>
+                    <button onclick="deleteDonation(${donation.id})" 
+                            class="text-red-600 hover:text-red-800">
+                        Удалить
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        // Заполнить поля текущими значениями
+        window.onload = function() {
+            const { target } = getSums();
+            document.getElementById('target-sum').value = target;
+            updateDonationsList();
+        };
+
+        // Обработчик для формы добавления доната
+        document.getElementById('donation-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const donationAmount = parseInt(document.getElementById('donation-amount').value, 10);
+            
+            if (donationAmount > 0) {
+                // Добавляем новое пожертвование в список
+                const donations = getDonations();
+                donations.push({
+                    id: Date.now(),
+                    amount: donationAmount,
+                    date: new Date().toLocaleString()
+                });
+                saveDonations(donations);
+                
+                document.getElementById('status').textContent = 'Пожертвование успешно добавлено!';
+                document.getElementById('donation-amount').value = '';
+                updateDonationsList();
+                window.dispatchEvent(new Event('storage'));
+            }
+        });
+
+        // Обработчик для формы целевой суммы
+        document.getElementById('target-sum-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const targetSum = parseInt(document.getElementById('target-sum').value, 10);
+            setSums(undefined, targetSum);
+            document.getElementById('status').textContent = 'Целевая сумма успешно обновлена!';
+            window.dispatchEvent(new Event('storage'));
+        });
+
+        // Функция для получения текущей суммы
+        function getCurrentAmount() {
+            const donations = getDonations();
+            const total = donations.reduce((sum, donation) => sum + donation.amount, 0);
+            console.log('Текущая сумма:', total);
+            return total;
+        }
+
+        function updateView() {
+            // Получаем текущую сумму из списка пожертвований
+            const current = getCurrentAmount();
+            // Получаем целевую сумму
+            const target = parseInt(localStorage.getItem('target_sum') || '5000000', 10);
+            
+            console.log('Обновление вида:', {
+                current,
+                target,
+                donations: getDonations()
+            });
+            
+            // Обновляем отображение суммы
+            document.getElementById('current-sum').textContent = 
+                new Intl.NumberFormat('ru-RU').format(current) + ' ₸';
+            
+            // Обновляем отображение целевой суммы
+            document.getElementById('target-sum').textContent = 
+                'барлығы ' + new Intl.NumberFormat('ru-RU').format(target) + ' ₸';
+            
+            // Обновляем прогресс-бар
+            const progress = target > 0 ? Math.min(100, (current / target) * 100) : 0;
+            document.getElementById('progress-bar').style.width = progress + '%';
+        }
+
+        // Очищаем localStorage при загрузке страницы (для тестирования)
+        localStorage.clear();
+
+        // Обновляем при загрузке страницы
+        updateView();
+
+        // Обновляем при изменении localStorage
+        window.addEventListener('storage', function(e) {
+            console.log('Событие storage:', e.key, e.newValue);
+            if (e.key === 'donations' || e.key === 'target_sum') {
+                updateView();
+            }
+        });
+
+        // Добавляем кнопку для очистки localStorage (для тестирования)
+        const clearButton = document.createElement('button');
+        clearButton.textContent = 'Очистить данные';
+        clearButton.className = 'bg-red-500 text-white px-4 py-2 rounded mt-4';
+        clearButton.onclick = function() {
+            localStorage.clear();
+            updateView();
+        };
+        document.querySelector('main').appendChild(clearButton);
+    </script>
+</body>
+</html> 

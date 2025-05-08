@@ -7,64 +7,258 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        body {
+        body { 
             font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #f6f8fc 0%, #e9f0f7 100%);
+            height: 100vh;
+            overflow: hidden;
+        }
+        .animate-number {
+            transition: all 0.5s ease-out;
+        }
+        .progress-bar-animate {
+            transition: width 1s ease-in-out;
+        }
+        .donation-card {
+            transition: transform 0.3s ease;
+        }
+        .donation-card:hover {
+            transform: translateY(-5px);
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .pulse-animation {
+            animation: pulse 0.5s ease-in-out;
+        }
+        /* Обновленные стили для анимации казино */
+        .slot-machine {
+            display: inline-block;
+            overflow: hidden;
+            position: relative;
+            height: 1.2em;
+            width: 0.8em;
+        }
+        .slot-machine .digit {
+            display: block;
+            height: 1.2em;
+            line-height: 1.2em;
+        }
+        .slot-machine .digit-wrapper {
+            position: absolute;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes slotSpin {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-100%); }
+        }
+        .slot-spin .digit-wrapper {
+            animation: slotSpin 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .win-animation {
+            animation: win 1s ease-in-out;
+        }
+        @keyframes win {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        #current-sum {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 1.2em;
+        }
+        #current-sum span {
+            display: inline-block;
+            transition: all 0.3s ease-out;
+        }
+        @keyframes numberAppear {
+            0% {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="min-h-screen flex flex-col">
     <header class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 py-4">
             <div class="flex items-center justify-center">
-                <img src="https://via.placeholder.com/150x50" alt="Логотип" class="h-12">
+                <img src="images/logo.png" alt="Логотип" class="h-12">
             </div>
         </div>
     </header>
 
-    <main class="max-w-7xl mx-auto px-4 py-12">
-        <div class="text-center">
-            <h1 class="text-3xl font-bold text-gray-900 mb-6">
+    <main class="flex-1 flex items-center justify-center">
+        <div class="text-center max-w-4xl mx-auto px-4">
+            <h1 class="text-4xl font-bold text-gray-900 mb-8 leading-tight">
                 Біз болашақ мұғалімдердің жаңа буынын құру арқылы саналы қоғамның қалыптасуына үлес қосамыз
             </h1>
             
-            <div class="bg-white rounded-lg shadow-lg p-8 max-w-2xl mx-auto mb-8">
-                <h2 class="text-2xl text-gray-600 mb-4">Собрано средств:</h2>
-                <div id="current-sum" class="text-6xl font-bold text-green-600 mb-4">
-                    0 ₸
+            <div class="bg-white rounded-2xl shadow-xl p-8 mx-auto mb-8 donation-card">
+                <h2 class="text-2xl text-gray-600 mb-6">Жиналған қаражат:</h2>
+                <div id="current-sum" class="text-7xl font-bold text-green-600 mb-4"></div>
+                <div id="target-sum" class="text-xl text-gray-500 mb-6">барлығы 0 ₸</div>
+                <div class="w-full bg-gray-100 rounded-full h-6 mt-4 overflow-hidden">
+                    <div id="progress-bar" class="bg-gradient-to-r from-green-500 to-green-600 h-6 rounded-full progress-bar-animate" style="width: 0%"></div>
                 </div>
-                <div id="target-sum" class="text-xl text-gray-500">
-                    из 5 000 000 ₸
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+                <div class="bg-white p-6 rounded-xl shadow-lg donation-card">
+                    <div class="text-3xl text-green-600 mb-2">🎓</div>
+                    <h3 class="text-xl font-semibold mb-2">Білім</h3>
+                    <p class="text-gray-600">Жаңа буын мұғалімдерді дайындау</p>
                 </div>
-                <div class="w-full bg-gray-200 rounded-full h-4 mt-4">
-                    <div id="progress-bar" class="bg-green-600 h-4 rounded-full" style="width: 0%"></div>
+                <div class="bg-white p-6 rounded-xl shadow-lg donation-card">
+                    <div class="text-3xl text-green-600 mb-2">🌱</div>
+                    <h3 class="text-xl font-semibold mb-2">Даму</h3>
+                    <p class="text-gray-600">Болашақтың қалыптасуына қатысу</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg donation-card">
+                    <div class="text-3xl text-green-600 mb-2">🤝</div>
+                    <h3 class="text-xl font-semibold mb-2">Қолдау</h3>
+                    <p class="text-gray-600">Бірлесіп жұмыс істеу</p>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Временно отключено для GitHub Pages
     <script>
-        function updateSum() {
-            fetch('http://localhost:5000/api/sum')
-                .then(response => response.json())
-                .then(data => {
-                    const currentSum = data.current_sum;
-                    const targetSum = data.target_sum;
-                    const progress = (currentSum / targetSum) * 100;
+        let previousAmount = 0;
 
-                    document.getElementById('current-sum').textContent = 
-                        new Intl.NumberFormat('ru-RU').format(currentSum) + ' ₸';
-                    document.getElementById('target-sum').innerHTML = 
-                        'из ' + new Intl.NumberFormat('ru-RU').format(targetSum) + ' ₸';
-                    document.getElementById('progress-bar').style.width = progress + '%';
-                })
-                .catch(error => console.error('Ошибка при получении данных:', error));
+        function getDonations() {
+            const donations = localStorage.getItem('donations');
+            console.log('Донаты из localStorage:', donations); // для отладки
+            return donations ? JSON.parse(donations) : [];
         }
 
-        // Обновляем сумму каждые 5 секунд
-        updateSum();
-        setInterval(updateSum, 5000);
+        function getCurrentAmount() {
+            const donations = getDonations();
+            const sum = donations.reduce((sum, donation) => {
+                console.log('Обработка доната:', donation); // для отладки
+                return sum + (parseInt(donation.amount) || 0);
+            }, 0);
+            console.log('Итоговая сумма:', sum); // для отладки
+            return sum;
+        }
+
+        function createSlotMachine(number) {
+            const formattedNumber = new Intl.NumberFormat('ru-RU').format(number);
+            console.log('Форматированное число:', formattedNumber); // для отладки
+            const digits = formattedNumber.split('');
+            
+            return digits.map(digit => {
+                if (digit === ' ' || digit === ',') {
+                    return digit;
+                }
+                
+                const slot = document.createElement('span');
+                slot.className = 'slot-machine';
+                
+                const wrapper = document.createElement('div');
+                wrapper.className = 'digit-wrapper';
+                
+                // Добавляем все возможные цифры
+                for (let i = 0; i <= 9; i++) {
+                    const digitSpan = document.createElement('span');
+                    digitSpan.className = 'digit';
+                    digitSpan.textContent = i;
+                    wrapper.appendChild(digitSpan);
+                }
+                
+                slot.appendChild(wrapper);
+                return slot;
+            });
+        }
+
+        function updateSlotMachine(newNumber, oldNumber) {
+            const currentSumElement = document.getElementById('current-sum');
+            currentSumElement.innerHTML = '';
+            
+            const newDigits = createSlotMachine(newNumber);
+            const numberStr = newNumber.toString().replace(/\D/g, '');
+            
+            newDigits.forEach((slot, index) => {
+                if (typeof slot === 'string') {
+                    currentSumElement.appendChild(document.createTextNode(slot));
+                    return;
+                }
+                
+                const wrapper = slot.querySelector('.digit-wrapper');
+                const currentDigit = parseInt(numberStr[index]);
+                
+                if (!isNaN(currentDigit)) {
+                    // Устанавливаем начальную позицию
+                    wrapper.style.transform = `translateY(-${currentDigit * 100}%)`;
+                    
+                    if (newNumber > oldNumber) {
+                        // Добавляем анимацию прокрутки
+                        wrapper.style.transition = 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
+                        setTimeout(() => {
+                            wrapper.style.transform = `translateY(-${currentDigit * 100}%)`;
+                        }, 50);
+                    }
+                }
+                
+                currentSumElement.appendChild(slot);
+            });
+        }
+
+        function updateView() {
+            const current = getCurrentAmount();
+            const target = parseInt(localStorage.getItem('target_sum') || '5000000', 10);
+            
+            const currentSumElement = document.getElementById('current-sum');
+            const targetSumElement = document.getElementById('target-sum');
+            const progressBar = document.getElementById('progress-bar');
+            
+            // Простое отображение суммы с анимацией
+            currentSumElement.textContent = new Intl.NumberFormat('ru-RU').format(current) + ' ₸';
+            
+            // Добавляем анимацию пульсации при изменении суммы
+            if (current !== previousAmount) {
+                currentSumElement.classList.add('pulse-animation');
+                setTimeout(() => {
+                    currentSumElement.classList.remove('pulse-animation');
+                }, 500);
+            }
+            
+            targetSumElement.textContent = 'барлығы ' + new Intl.NumberFormat('ru-RU').format(target) + ' ₸';
+            
+            const progress = target > 0 ? Math.min(100, (current / target) * 100) : 0;
+            progressBar.style.width = progress + '%';
+            
+            previousAmount = current;
+        }
+
+        // Обновляем стили для анимации
+        const style = document.createElement('style');
+        style.textContent = `
+            .pulse-animation {
+                animation: pulse 0.5s ease-in-out;
+            }
+            @keyframes pulse {
+                0% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+                100% { transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(style);
+
+        updateView();
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'donations' || e.key === 'target_sum') {
+                updateView();
+            }
+        });
     </script>
-    -->
 </body>
 </html> 
