@@ -104,6 +104,105 @@
                 margin-bottom: 1.5rem;
             }
         }
+        /* Стили для салюта */
+        .firework {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            animation: firework 1s ease-out forwards;
+            pointer-events: none;
+        }
+
+        @keyframes firework {
+            0% {
+                transform: translate(var(--x), var(--y));
+                opacity: 1;
+            }
+            100% {
+                transform: translate(var(--x), var(--y)) scale(20);
+                opacity: 0;
+            }
+        }
+
+        /* Стили для затемнения фона */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease-out;
+            z-index: 999;
+        }
+
+        .overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .celebration-message {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            background: rgba(255, 255, 255, 0.98);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 0 30px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.5s ease-out;
+            max-width: 90%;
+            width: 500px;
+        }
+
+        .celebration-message.show {
+            transform: translate(-50%, -50%) scale(1);
+            opacity: 1;
+        }
+
+        .celebration-message h2 {
+            color: #10B981;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .celebration-message p {
+            color: #4B5563;
+            font-size: 1.4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .celebration-amount {
+            font-size: 4rem !important;
+            font-weight: 700;
+            color: #10B981;
+            margin: 2rem 0;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .celebration-message button {
+            background: #10B981;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 0.75rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .celebration-message button:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -150,23 +249,48 @@
         </div>
     </main>
 
+    <!-- Добавляем затемнение фона -->
+    <div id="overlay" class="overlay"></div>
+
+    <!-- Обновляем модальное окно -->
+    <div id="celebration-message" class="celebration-message">
+        <h2>🎉 Құттықтаймыз! 🎉</h2>
+        <p>Біз мақсатымызға жеттік!</p>
+        <p class="celebration-amount" id="celebration-amount"></p>
+        <p>Барлық қатысушыларға алғыс білдіреміз!</p>
+        <button onclick="closeCelebration()">Жақсы</button>
+    </div>
+
     <script>
         let previousAmount = 0;
+        const coinSound = new Audio('sounds/coins.mp3');
+        const victorySound = new Audio('sounds/end.mp3');
+        coinSound.volume = 0.3;
+        victorySound.volume = 0.5;
 
         function getDonations() {
             const donations = localStorage.getItem('donations');
-            console.log('Донаты из localStorage:', donations); // для отладки
+            console.log('Донаты из localStorage:', donations);
             return donations ? JSON.parse(donations) : [];
         }
 
         function getCurrentAmount() {
             const donations = getDonations();
             const sum = donations.reduce((sum, donation) => {
-                console.log('Обработка доната:', donation); // для отладки
+                console.log('Обработка доната:', donation);
                 return sum + (parseInt(donation.amount) || 0);
             }, 0);
-            console.log('Итоговая сумма:', sum); // для отладки
+            console.log('Итоговая сумма:', sum);
             return sum;
+        }
+
+        function playCoinSound() {
+            // Сбрасываем звук на начало, если он уже играет
+            coinSound.currentTime = 0;
+            // Воспроизводим звук
+            coinSound.play().catch(error => {
+                console.log('Ошибка воспроизведения звука:', error);
+            });
         }
 
         function createSlotMachine(number) {
@@ -231,6 +355,57 @@
             });
         }
 
+        function createFirework(x, y, color) {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            firework.style.setProperty('--x', x + 'px');
+            firework.style.setProperty('--y', y + 'px');
+            firework.style.backgroundColor = color;
+            document.body.appendChild(firework);
+            
+            setTimeout(() => {
+                firework.remove();
+            }, 1000);
+        }
+
+        function celebrate() {
+            const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4'];
+            const message = document.getElementById('celebration-message');
+            const overlay = document.getElementById('overlay');
+            const celebrationAmount = document.getElementById('celebration-amount');
+            
+            // Показываем собранную сумму
+            const current = getCurrentAmount();
+            celebrationAmount.textContent = new Intl.NumberFormat('ru-RU').format(current) + ' ₸';
+            
+            // Показываем затемнение и сообщение
+            overlay.classList.add('show');
+            message.classList.add('show');
+            
+            // Проигрываем звук победы
+            victorySound.currentTime = 0;
+            victorySound.play().catch(error => {
+                console.log('Ошибка воспроизведения звука победы:', error);
+            });
+            
+            // Запускаем салют
+            for (let i = 0; i < 50; i++) {
+                setTimeout(() => {
+                    const x = Math.random() * window.innerWidth;
+                    const y = Math.random() * window.innerHeight;
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    createFirework(x, y, color);
+                }, i * 100);
+            }
+        }
+
+        function closeCelebration() {
+            const message = document.getElementById('celebration-message');
+            const overlay = document.getElementById('overlay');
+            message.classList.remove('show');
+            overlay.classList.remove('show');
+        }
+
         function updateView() {
             const current = getCurrentAmount();
             const target = parseInt(localStorage.getItem('target_sum') || '5000000', 10);
@@ -238,6 +413,11 @@
             const currentSumElement = document.getElementById('current-sum');
             const targetSumElement = document.getElementById('target-sum');
             const progressBar = document.getElementById('progress-bar');
+            
+            // Проигрываем звук только если сумма увеличилась
+            if (current > previousAmount) {
+                playCoinSound();
+            }
             
             // Простое отображение суммы с анимацией
             currentSumElement.textContent = new Intl.NumberFormat('ru-RU').format(current) + ' ₸';
@@ -254,6 +434,11 @@
             
             const progress = target > 0 ? Math.min(100, (current / target) * 100) : 0;
             progressBar.style.width = progress + '%';
+            
+            // Проверяем, достигнута ли цель
+            if (current >= target && previousAmount < target) {
+                celebrate();
+            }
             
             previousAmount = current;
         }
